@@ -17,7 +17,7 @@
 
 <div class="container">
   <h2>RaspberryPi Heat Controller</h2>          
-  <table class="table table-hover table-responsive">
+  <table id="intervals_table" class="table table-hover table-responsive">
     <thead>
       <tr>
         <th>Start</th>
@@ -46,6 +46,19 @@
 </div>
 
 <script type="text/javascript">
+  function get_intervals() {
+    var intervals_uri = "http://127.0.0.1:8081/intervals";
+    $.getJSON(intervals_uri)
+    .done(function(res) {
+      console.log(res);
+      $.each(res.intervals, function(i, item) {
+        var trow = '<tr><td>' + item.start + '</td><td>' + item.end + '</td>';
+        trow += '<td><button type="button" class="btn btn-danger">Delete</button></td></tr>'
+        $('#intervals_table tbody').append(trow);
+      })
+    })
+  }
+
   $('#start_timepicker').timepicker({
     minuteStep: 1,
     showMeridian: false
@@ -54,6 +67,8 @@
     minuteStep: 1,
     showMeridian: false
   });
+
+  get_intervals();
 </script>
 
 </body>
