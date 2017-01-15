@@ -89,9 +89,21 @@ var interval = setInterval(function() {
     console.log("Updating Heater state.");
 
     if (getHeaterState()) {
-        console.log("ON");
+        fs.writeFile("/tmp/heaterTest", "1", function(err) {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log("ON");
+        });
     } else {
-        console.log("OFF");
+        fs.writeFile("/tmp/heaterTest", "0", function(err) {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log("ON");
+        });
     }
 
 }, 5000);
