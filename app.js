@@ -12,8 +12,9 @@ var intervals = [
 http.createServer( function (request, response) {  
 
     var pathname = url.parse(request.url).pathname;
+    var method = request.method;
 
-    if (pathname == "/index.html") {
+    if (method == 'GET' && pathname == "/index.html") {
         console.log("Request for " + pathname + " received.");
    
         // Read the requested file content from file system
@@ -31,11 +32,29 @@ http.createServer( function (request, response) {
     }
 
     if (pathname == "/intervals") {
-        console.log("Request for intervals received.");
-        response.writeHead(200, {'Content-Type': 'application/json'});
-        var response_body = {"intervals" : intervals};
-        response.write(JSON.stringify(response_body));
-        response.end();
+        if (method == 'GET') {
+            console.log("Request for intervals received.");
+            response.writeHead(200, {'Content-Type': 'application/json'});
+            var response_body = {"intervals" : intervals};
+            response.write(JSON.stringify(response_body));
+            response.end();
+        }
+
+        if (method == 'POST') {
+            var body = '';
+            request.on('data', function(chunk) {
+                body += chunk;
+            }).on('end', function() {
+                var intervals_update = JSON.parse(body.toString());
+                intervals = intervals_update.intervals;
+                console.log("Intervals updated to: " + JSON.stringify(intervals));
+
+                response.writeHead(200, {'Content-Type': 'application/json'});
+                var response_body = {"intervals" : intervals};
+                response.write(JSON.stringify(response_body));
+                response.end();
+            }); 
+        }
     }
 
 }).listen(8081);

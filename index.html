@@ -35,10 +35,10 @@
           <input id="start_timepicker" value="00:00" type="text" class="form-control input-small">
         </td>
         <td>
-          <input id="stop_timepicker" value="00:00" type="text" class="form-control input-small">
+          <input id="end_timepicker" value="00:00" type="text" class="form-control input-small">
         </td>
         <td>
-          <button type="button" class="btn btn-primary">Add ON interval</button>
+          <button id="add_button" type="button" class="btn btn-primary">Add ON interval</button>
         </td>
       </tr>
     </tfoot>
@@ -46,29 +46,90 @@
 </div>
 
 <script type="text/javascript">
-  function get_intervals() {
+  function get_intervals_from_server() {
     var intervals_uri = "http://127.0.0.1:8081/intervals";
     $.getJSON(intervals_uri)
     .done(function(res) {
-      console.log(res);
-      $.each(res.intervals, function(i, item) {
-        var trow = '<tr><td>' + item.start + '</td><td>' + item.end + '</td>';
-        trow += '<td><button type="button" class="btn btn-danger">Delete</button></td></tr>'
-        $('#intervals_table tbody').append(trow);
-      })
+      display_intervals(res.intervals);
     })
+    .fail(function(jqxhr, textStatus, error) {
+      alert('Cannot connect to server. ' + error);
+    });
+  }
+
+  function get_intervals_from_ui() {
+    var intervals = [];
+    $('#intervals_table > tbody > tr').each(function() {
+      $curRow = $(this);
+      var start = $curRow.find('#item_start').text();
+      var end = $curRow.find('#item_end').text();
+
+      intervals.push({'start': start, 'end': end});
+    });
+
+    return intervals;
+  }
+
+  function add_interval_to_display(start, end) {
+    var trow = '<tr><td id="item_start">' + start + '</td><td id="item_end">' + end + '</td>';
+        trow += '<td><button type="button" class="btn btn-danger">Delete</button></td></tr>';
+    $('#intervals_table tbody').append(trow);
+  }
+
+  function display_intervals(intervals) {
+    $('#intervals_table > tbody > tr').remove();
+
+    $.each(intervals, function(i, item) {
+      add_interval_to_display(item.start, item.end);
+    });
+
+    $('.btn-danger').click(function(){
+      $(this).parents('tr').remove();
+      intervals = get_intervals_from_ui();
+      send_intervals_to_server(intervals);
+    });
+  }
+
+  function send_intervals_to_server(intervals) {
+    var intervals_uri = "http://127.0.0.1:8081/intervals";
+
+    post_body = {'intervals': intervals};
+
+    $.ajax({
+      type: "POST",
+      url: intervals_uri,
+      data: JSON.stringify(post_body),
+      dataType: "json",
+      contentType:"application/json; charset=utf-8",
+      success: function(data) {
+        display_intervals(data.intervals);
+      },
+      error: function() {
+        alert("Updating intervals failed");
+      }
+  });
+
   }
 
   $('#start_timepicker').timepicker({
     minuteStep: 1,
     showMeridian: false
   });
-  $('#stop_timepicker').timepicker({
+  $('#end_timepicker').timepicker({
     minuteStep: 1,
     showMeridian: false
   });
 
-  get_intervals();
+  $('#add_button').on('click', function (e) {
+    var start = $('#start_timepicker').val();
+    var end = $('#end_timepicker').val();
+    add_interval_to_display(start, end);
+
+    intervals = get_intervals_from_ui();
+    send_intervals_to_server(intervals);
+  });
+
+  get_intervals_from_server();
 </script>
 
 </body>
