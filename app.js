@@ -5,7 +5,7 @@ var url = require('url');
 
 var intervals = [
     {"start" : "00:10", "end" : "00:15"},
-    {"start" : "01:10", "end" : "01:15"}
+    {"start" : "01:10", "end" : "13:15"}
 ];
 
 // Create a server
@@ -58,6 +58,43 @@ http.createServer( function (request, response) {
     }
 
 }).listen(8081);
+
+function stringToDate(stringTime) {
+    var rtn = new Date();
+
+    rtn.setHours(stringTime.split(':')[0]);
+    rtn.setMinutes(stringTime.split(':')[1]);
+
+    return rtn;
+}
+
+function getHeaterState() {
+    var state = false;
+
+    var now = new Date();
+
+    intervals.forEach(function(interval) {
+        var start = stringToDate(interval.start);
+        var end = stringToDate(interval.end);
+
+        if (now > start && now < end) {
+            state = true;
+        }
+    });
+
+    return state;
+}
+
+var interval = setInterval(function() {
+    console.log("Updating Heater state.");
+
+    if (getHeaterState()) {
+        console.log("ON");
+    } else {
+        console.log("OFF");
+    }
+
+}, 5000);
 
 // Console will print the message
 console.log('Server running at http://127.0.0.1:8081/');
