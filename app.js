@@ -1,7 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
-
+var exec = require('child_process').exec;
 
 var intervals = [
     {"start" : "00:10", "end" : "00:15"},
@@ -85,28 +85,39 @@ function getHeaterState() {
     return state;
 }
 
+function exec_command_and_log_error(command) {
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.log(`exec error: ${error}`);
+            console.log(`stdout: ${stdout}`);
+            console.log(`stderr: ${stderr}`);
+            return;
+        }
+    });
+}
+
 var interval = setInterval(function() {
     console.log("Updating Heater state.");
 
     if (getHeaterState()) {
-        fs.writeFile("/tmp/heaterTest", "1", function(err) {
-            if (err) {
-                return console.log(err);
-            }
-
-            console.log("ON");
-        });
+        console.log("ON");
+        // Turn on LED
+        exec_command_and_log_error('gpio mode 1 out');
+        exec_command_and_log_error('gpio write 1 1');
+        // Turn on HEAT
+        exec_command_and_log_error('gpio mode 0 out');
+        exec_command_and_log_error('gpio write 1 0');        
     } else {
-        fs.writeFile("/tmp/heaterTest", "0", function(err) {
-            if (err) {
-                return console.log(err);
-            }
-
-            console.log("ON");
-        });
+        console.log("OFF");
+        // Turn off LED
+        exec_command_and_log_error('gpio mode 1 out');
+        exec_command_and_log_error('gpio write 1 0');
+        // Turn off HEAT
+        exec_command_and_log_error('gpio mode 0 out');
+        exec_command_and_log_error('gpio write 1 1');
     }
 
 }, 5000);
 
 // Console will print the message
-console.log('Server running at http://127.0.0.1:8081/');
+console.log('Server running at http://*:8081/');
