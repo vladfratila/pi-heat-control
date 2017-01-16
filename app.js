@@ -4,8 +4,8 @@ var url = require('url');
 var exec = require('child_process').exec;
 
 var intervals = [
-    {"start" : "00:10", "end" : "00:15"},
-    {"start" : "01:10", "end" : "13:15"}
+    {"start" : "07:30", "end" : "09:30"},
+    {"start" : "17:30", "end" : "23:30"}
 ];
 
 // Create a server
@@ -96,25 +96,25 @@ function exec_command_and_log_error(command) {
     });
 }
 
+// Setup PINS as output
+exec_command_and_log_error('gpio mode 0 out');
+exec_command_and_log_error('gpio mode 1 out');
+
 var interval = setInterval(function() {
     console.log("Updating Heater state.");
 
     if (getHeaterState()) {
         console.log("ON");
         // Turn on LED
-        exec_command_and_log_error('gpio mode 1 out');
         exec_command_and_log_error('gpio write 1 1');
         // Turn on HEAT
-        exec_command_and_log_error('gpio mode 0 out');
-        exec_command_and_log_error('gpio write 1 0');        
+        exec_command_and_log_error('gpio write 0 0');
     } else {
         console.log("OFF");
         // Turn off LED
-        exec_command_and_log_error('gpio mode 1 out');
         exec_command_and_log_error('gpio write 1 0');
         // Turn off HEAT
-        exec_command_and_log_error('gpio mode 0 out');
-        exec_command_and_log_error('gpio write 1 1');
+        exec_command_and_log_error('gpio write 0 1');
     }
 
 }, 5000);
