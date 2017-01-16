@@ -57,7 +57,7 @@ http.createServer( function (request, response) {
         }
     }
 
-}).listen(8081);
+}).listen(80);
 
 function stringToDate(stringTime) {
     var rtn = new Date();
@@ -120,4 +120,4 @@ var interval = setInterval(function() {
 }, 5000);
 
 // Console will print the message
-console.log('Server running at http://*:8081/');
+console.log('Server running at http://*:80/');
